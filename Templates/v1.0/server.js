@@ -7,7 +7,9 @@ const aiRoutes = require("./routes/ai.routes");
 const logger = require("./utils/logger");
 const requestLogger = require("./middleware/requestLogger");
 const errorHandler = require("./middleware/errorHandler");
+const connectDB = require("./config/db");
 
+connectDB();
 app.use(express.json());
 app.use(requestLogger);
 
