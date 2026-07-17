@@ -1,9 +1,8 @@
 const mongoose = require("mongoose");
-const logger = require("../../../../AssetFlow/server/utils/logger");
+const logger = require("../utils/logger");
 
 const connectDB = async () => {
   try {
-    console.log(process.env.MONGO_URI);
     await mongoose.connect(process.env.MONGO_URI);
     logger.info("MongoDB connected successfully");
   } catch (err) {
