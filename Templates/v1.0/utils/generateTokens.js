@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const { randomUUID } = require("crypto");
 const jwtConfig = require("../config/jwt.config");
-const redisClient = require("./redisClient");
+const redisClient = require("../services/redis.client");
 const logger = require("./logger");
 
 // ── Access Token ─────────────────────────────────────────────────────

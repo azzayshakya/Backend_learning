@@ -1,4 +1,4 @@
-const ApiError = require("../utils/ApiError");
+const ApiError = require("../utils/apiError");
 
 // Role gate — usage: authorizeRoles("admin", "superadmin")
 // Must run AFTER authenticateAccessToken since it reads req.user.role.

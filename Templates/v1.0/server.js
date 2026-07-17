@@ -5,8 +5,8 @@ const app = express();
 const userRoutes = require("./routes/user.routes");
 const aiRoutes = require("./routes/ai.routes");
 const logger = require("./utils/logger");
-const requestLogger = require("./middleware/requestLogger");
-const errorHandler = require("./middleware/errorHandler");
+const requestLogger = require("./middleware/request.logger");
+const errorHandler = require("./middleware/error.handler");
 const connectDB = require("./config/db");
 
 connectDB();

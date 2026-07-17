@@ -1,4 +1,4 @@
-const ApiError = require("../utils/ApiError");
+const ApiError = require("../utils/apiError");
 
 // Generic Joi-schema validator — pass a schema, get back a middleware.
 // Runs BEFORE controllers so malformed/malicious input never reaches
