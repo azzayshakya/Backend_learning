@@ -17,6 +17,7 @@ function signAccessToken(user) {
 // ── Refresh Token ────────────────────────────────────────────────────
 // Long-lived. Its jti gets stored in Redis (keyed by user + device) so we
 // can validate, rotate, and revoke it independently of the JWT signature.
+
 function signRefreshToken(user) {
   const jti = randomUUID();
   const token = jwt.sign(

@@ -4,16 +4,8 @@ const redisClient = require("../services/redis.client");
 const ApiError = require("../utils/apiError");
 const logger = require("../utils/logger");
 
-/**
- * Builds a rate limiter backed by Redis so limits are shared correctly
- * across multiple Node instances (PM2 cluster / horizontal scaling).
- * Falls back to express-rate-limit's default in-memory store if Redis
- * isn't ready yet — limiting still works locally, it just won't be
- * shared across instances until Redis reconnects. We log this so it's
- * never a silent gap in production.
- */
 const buildLimiter = ({ windowMs, max, message, prefix, keyGenerator }) => {
-  const redisReady = redisClient.status === "ready"; // ioredis connection state
+  const redisReady = redisClient.status === "ready";
 
   if (!redisReady) {
     logger.warn(

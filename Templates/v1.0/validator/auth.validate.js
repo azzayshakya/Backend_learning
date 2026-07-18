@@ -1,6 +1,5 @@
 const Joi = require("joi");
 
-// Reusable password rule: min 8 chars, needs at least one letter + one digit.
 const password = Joi.string()
   .min(8)
   .pattern(/^(?=.*[A-Za-z])(?=.*\d).+$/)

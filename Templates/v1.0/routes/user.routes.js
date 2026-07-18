@@ -10,7 +10,7 @@ const {
 const checkTokenBlacklist = require("../middleware/blackList.middleware");
 const checkUserBlockedStatus = require("../middleware/blockCheck.middleware");
 const authorizeRoles = require("../middleware/rbac.middleware");
-const { signupSchema, loginSchema } = require("../middleware/auth.validate");
+const { signupSchema, loginSchema } = require("../validator/auth.validate");
 
 const authController = require("../controllers/user.controller");
 
