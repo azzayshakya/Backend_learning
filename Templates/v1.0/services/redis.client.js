@@ -1,12 +1,19 @@
 const Redis = require("ioredis");
-const redisConfig = require("../config/redis.config");
+const redisOptions = require("../config/redis.config");
 const logger = require("../utils/logger");
 
-// Single shared Redis connection for the whole app — used for refresh
-// token storage, access-token blacklist, blocked-user flags, and rate limiting.
-const redisClient = new Redis(redisConfig);
+const redisUrl = process.env.UPSTASH_REDIS_URL;
+console.log(redisUrl);
+if (!redisUrl) {
+  logger.error("UPSTASH_REDIS_URL is missing from environment variables");
+}
+
+const redisClient = new Redis(redisUrl, redisOptions);
 
 redisClient.on("connect", () => logger.info("Redis connected"));
-redisClient.on("error", (err) => logger.error(`Redis error: ${err.message}`));
+redisClient.on("ready", () => logger.info("Redis ready to accept commands"));
+redisClient.on("error", (err) =>
+  logger.error(`Redis error: ${err.message || err}`),
+);
 
 module.exports = redisClient;

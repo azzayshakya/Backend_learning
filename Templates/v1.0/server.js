@@ -8,8 +8,9 @@ const logger = require("./utils/logger");
 const requestLogger = require("./middleware/request.logger");
 const errorHandler = require("./middleware/error.handler");
 const connectDB = require("./config/db");
-
+const redisClient = require("./services/redis.client");
 connectDB();
+// redisClient();
 app.use(express.json());
 app.use(requestLogger);
 
