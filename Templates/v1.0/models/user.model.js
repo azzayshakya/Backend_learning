@@ -1,29 +1,60 @@
-const users = [
-  {
-    id: 1,
-    name: "Ajay",
-    email: "ajay@gmail.com",
-  },
-  {
-    id: 2,
-    name: "Rahul",
-    email: "rahul@gmail.com",
-  },
-  {
-    id: 3,
-    name: "aman",
-    email: "aman@gmail.com",
-  },
-  {
-    id: 4,
-    name: "nishant",
-    email: "nishant@gmail.com",
-  },
-  {
-    id: 5,
-    name: "monit",
-    email: "monit@gmail.com",
-  },
-];
+const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 
-module.exports = users;
+const SALT_ROUNDS = 12;
+
+const userSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, "Name is required"],
+      trim: true,
+      minlength: 2,
+      maxlength: 50,
+    },
+    email: {
+      type: String,
+      required: [true, "Email is required"],
+      unique: true, // creates a unique index — fast lookup + prevents duplicate signups
+      trim: true,
+      lowercase: true,
+      match: [/^\S+@\S+\.\S+$/, "Please enter a valid email"],
+    },
+    password: {
+      type: String,
+      required: [true, "Password is required"],
+      minlength: 8,
+      select: false, // never returned by default on .find()/.findOne() — must opt in with .select("+password")
+    },
+    role: {
+      type: String,
+      enum: ["user", "admin", "superadmin"],
+      default: "user",
+    },
+    isBlocked: {
+      type: Boolean,
+      default: false, // persisted source of truth; Redis "blocked_user:*" key is the fast-path cache of this
+    },
+  },
+  { timestamps: true }, // adds createdAt / updatedAt automatically
+);
+
+// ── Auto-hash password before saving ────────────────────────────────
+// Runs on User.create() AND user.save() — so no code path can accidentally
+// save a plaintext password, regardless of which controller touches it.
+userSchema.pre("save", async function hashPassword(next) {
+  if (!this.isModified("password")) return next(); // skip re-hashing on unrelated updates (e.g. name change)
+
+  this.password = await bcrypt.hash(this.password, SALT_ROUNDS);
+  next();
+});
+
+// ── Instance method: compare a plaintext candidate against the stored hash ──
+// Keeps bcrypt logic out of controllers — controllers just call user.comparePassword(pw).
+userSchema.methods.comparePassword = async function comparePassword(
+  candidatePassword,
+) {
+  return bcrypt.compare(candidatePassword, this.password);
+};
+
+module.exports = mongoose.model("User", userSchema);

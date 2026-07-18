@@ -1,7 +1,6 @@
-const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-const User = require("../models/user.model");
+const User = require("../models/user.model"); // adjust path/fields to match your actual model
 const redisClient = require("../services/redis.client");
 const {
   generateTokenPair,
@@ -11,8 +10,6 @@ const ApiError = require("../utils/ApiError");
 const ApiResponse = require("../utils/ApiResponse");
 const asyncHandler = require("../utils/asyncHandler");
 const logger = require("../utils/logger");
-
-const SALT_ROUNDS = 12;
 
 // ── Cookie options ──────────────────────────────────────────────────
 // httpOnly: JS on the page can't read it (blocks XSS token theft)
@@ -57,13 +54,8 @@ const signup = asyncHandler(async (req, res) => {
   if (existingUser)
     throw ApiError.conflict("An account with this email already exists");
 
-  const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-  const user = await User.create({
-    name,
-    email,
-    password: hashedPassword,
-    role: "user",
-  });
+  // Password is hashed automatically by the pre("save") hook in user.model.js
+  const user = await User.create({ name, email, password, role: "user" });
 
   const deviceId = req.body.deviceId || `device_${Date.now()}`;
   const tokens = await generateTokenPair(user, deviceId);
@@ -85,11 +77,11 @@ const signup = asyncHandler(async (req, res) => {
 const login = asyncHandler(async (req, res) => {
   const { email, password, deviceId } = req.body;
 
-  // Select password explicitly if your schema has `select: false` on it.
+  // password field has `select: false` in the schema — must opt in explicitly
   const user = await User.findOne({ email }).select("+password");
   if (!user) throw ApiError.unauthorized("Invalid email or password");
 
-  const isMatch = await bcrypt.compare(password, user.password);
+  const isMatch = await user.comparePassword(password);
   if (!isMatch) throw ApiError.unauthorized("Invalid email or password");
 
   // Redundant safety check — checkUserBlockedStatus only runs on already-authenticated
