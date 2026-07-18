@@ -4,10 +4,6 @@ const jwtConfig = require("../config/jwt.config");
 const redisClient = require("../services/redis.client");
 const logger = require("./logger");
 
-// ── Access Token ─────────────────────────────────────────────────────
-// Short-lived, stateless. Carries only what's needed to identify + authorize
-// the user (id, role). Includes a unique "jti" so a single token can be
-// blacklisted on logout even though JWTs normally can't be revoked early.
 function signAccessToken(user) {
   const jti = randomUUID();
   const token = jwt.sign(
