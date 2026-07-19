@@ -20,7 +20,7 @@ const refreshCookieOptions = {
   secure: process.env.NODE_ENV === "production",
   sameSite: "strict",
   maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days, matches jwt.config refresh expiry
-  path: "/api/v1/auth", // scope the cookie to auth routes only
+  path: "/", // scope the cookie to auth routes only
 };
 
 const deviceCookieOptions = {

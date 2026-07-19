@@ -42,13 +42,11 @@ const userSchema = new mongoose.Schema(
 // ── Auto-hash password before saving ────────────────────────────────
 // Runs on User.create() AND user.save() — so no code path can accidentally
 // save a plaintext password, regardless of which controller touches it.
-userSchema.pre("save", async function hashPassword(next) {
-  if (!this.isModified("password")) return next(); // skip re-hashing on unrelated updates (e.g. name change)
+userSchema.pre("save", async function () {
+  if (!this.isModified("password")) return;
 
   this.password = await bcrypt.hash(this.password, SALT_ROUNDS);
-  next();
 });
-
 // ── Instance method: compare a plaintext candidate against the stored hash ──
 // Keeps bcrypt logic out of controllers — controllers just call user.comparePassword(pw).
 userSchema.methods.comparePassword = async function comparePassword(

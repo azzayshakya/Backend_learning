@@ -27,7 +27,7 @@ const authenticateAccessToken = asyncHandler(async (req, res, next) => {
 });
 
 const verifyRefreshToken = asyncHandler(async (req, res, next) => {
-  const token = req.headers["refresh-token"];
+  const token = req.cookies?.refreshToken;
 
   if (!token) {
     throw ApiError.unauthorized("Refresh token missing");

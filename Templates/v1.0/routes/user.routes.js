@@ -17,13 +17,13 @@ const authController = require("../controllers/user.controller");
 // ── Public routes ───────────────────────────────────────────────────
 router.post(
   "/signup",
-  authLimiter,
+  // authLimiter,
   validateRequest(signupSchema),
   authController.signup,
 );
 router.post(
   "/login",
-  authLimiter,
+  // authLimiter,
   validateRequest(loginSchema),
   authController.login,
 );
