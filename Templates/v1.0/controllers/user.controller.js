@@ -10,6 +10,7 @@ const ApiError = require("../utils/ApiError");
 const ApiResponse = require("../utils/ApiResponse");
 const asyncHandler = require("../utils/asyncHandler");
 const logger = require("../utils/logger");
+const generateUniqueUsername = require("../utils/generateUniqueUsername");
 
 // ── Cookie options ──────────────────────────────────────────────────
 // httpOnly: JS on the page can't read it (blocks XSS token theft)
@@ -43,6 +44,7 @@ function toSafeUser(user) {
     name: user.name,
     email: user.email,
     role: user.role,
+    username: user.username,
   };
 }
 
@@ -53,9 +55,15 @@ const signup = asyncHandler(async (req, res) => {
   const existingUser = await User.findOne({ email });
   if (existingUser)
     throw ApiError.conflict("An account with this email already exists");
-
+  const username = await generateUniqueUsername();
   // Password is hashed automatically by the pre("save") hook in user.model.js
-  const user = await User.create({ name, email, password, role: "user" });
+  const user = await User.create({
+    name,
+    email,
+    password,
+    username,
+    role: "user",
+  });
 
   const deviceId = req.body.deviceId || `device_${Date.now()}`;
   const tokens = await generateTokenPair(user, deviceId);

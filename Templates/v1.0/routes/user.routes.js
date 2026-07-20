@@ -36,10 +36,10 @@ router.post(
 
 // ── Protected routes (order matters: auth -> blacklist -> block -> rbac) ──
 router.get(
-  "/me",
+  "/my-session",
   authenticateAccessToken,
-  checkTokenBlacklist,
-  checkUserBlockedStatus,
+  // checkTokenBlacklist,
+  // checkUserBlockedStatus,
   authController.getMyProfile,
 );
 
