@@ -63,7 +63,6 @@ async function generateTokenPair(user, deviceId = "default") {
 // Signature/expiry check only — no Redis lookup here. Middleware layers
 // the Redis/blacklist/block checks on top separately (single responsibility).
 function verifyAccessToken(token) {
-  console.log("verifyAccessToken token", token);
   return jwt.verify(token, jwtConfig.accessToken.secret);
 }
 
