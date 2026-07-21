@@ -34,7 +34,7 @@ const deviceCookieOptions = {
 function sendTokens(res, { accessToken, refreshToken, deviceId }) {
   res.cookie("refreshToken", refreshToken, refreshCookieOptions);
   res.cookie("deviceId", deviceId, deviceCookieOptions);
-  return accessToken;
+  return { accessToken, refreshToken };
 }
 
 // Strips sensitive fields before sending user data back to the client.
@@ -67,7 +67,7 @@ const signup = asyncHandler(async (req, res) => {
 
   const deviceId = req.body.deviceId || `device_${Date.now()}`;
   const tokens = await generateTokenPair(user, deviceId);
-  const accessToken = sendTokens(res, tokens);
+  const { accessToken, refreshToken } = sendTokens(res, tokens);
 
   logger.info(`New signup: ${user.email}`);
   return res
@@ -75,7 +75,7 @@ const signup = asyncHandler(async (req, res) => {
     .json(
       ApiResponse(
         201,
-        { user: toSafeUser(user), accessToken },
+        { user: toSafeUser(user), deviceId, accessToken, refreshToken },
         "Account created successfully",
       ),
     );
@@ -100,18 +100,21 @@ const login = asyncHandler(async (req, res) => {
 
   const finalDeviceId = deviceId || `device_${Date.now()}`;
   const tokens = await generateTokenPair(user, finalDeviceId);
-  const accessToken = sendTokens(res, tokens);
+  const { accessToken, refreshToken } = sendTokens(res, tokens);
 
   logger.info(`Login: ${user.email} (device: ${finalDeviceId})`);
-  return res
-    .status(200)
-    .json(
-      ApiResponse(
-        200,
-        { user: toSafeUser(user), accessToken },
-        "Logged in successfully",
-      ),
-    );
+  return res.status(200).json(
+    ApiResponse(
+      200,
+      {
+        user: toSafeUser(user),
+        accessToken,
+        refreshToken,
+        deviceId: finalDeviceId,
+      },
+      "Logged in successfully",
+    ),
+  );
 });
 
 // ── POST /refresh-token ─────────────────────────────────────────────
@@ -129,11 +132,17 @@ const refreshToken = asyncHandler(async (req, res) => {
   // Issuing a new pair overwrites the Redis refresh-token entry for this
   // device — this IS the rotation step (old refresh token becomes unusable).
   const tokens = await generateTokenPair(user, deviceId);
-  const accessToken = sendTokens(res, tokens);
+  const { accessToken, refreshToken } = sendTokens(res, tokens);
 
   return res
     .status(200)
-    .json(ApiResponse(200, { accessToken }, "Token refreshed"));
+    .json(
+      ApiResponse(
+        200,
+        { user: toSafeUser(user), accessToken, refreshToken, deviceId },
+        "Token refreshed",
+      ),
+    );
 });
 
 // ── GET /me ───────────────────────────────────────────────────────────
@@ -149,7 +158,7 @@ const getMyProfile = asyncHandler(async (req, res) => {
 // ── POST /logout ─────────────────────────────────────────────────────
 const logout = asyncHandler(async (req, res) => {
   const { id, jti } = req.user;
-  const deviceId = req.cookies?.deviceId || "default";
+  const deviceId = req.cookies?.deviceId || req.body?.deviceId || "default";
 
   // Blacklist THIS access token until its natural expiry — stateless JWTs
   // can't be deleted, so we track revoked jtis until they'd have expired anyway.

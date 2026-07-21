@@ -15,7 +15,7 @@ connectDB();
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: true,
     credentials: true,
   }),
 );
@@ -27,7 +27,7 @@ app.use("/", aiRoutes);
 
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 3006;
 
 app.listen(PORT, () => {
   logger.info(`Server started on port ${PORT}`);

@@ -5,6 +5,7 @@ const {
 const redisClient = require("../services/redis.client");
 const ApiError = require("../utils/apiError");
 const asyncHandler = require("../utils/asyncHandler");
+const logger = require("../utils/logger");
 
 function extractAccessToken(req) {
   const header = req.headers.authorization;
@@ -25,9 +26,15 @@ const authenticateAccessToken = asyncHandler(async (req, res, next) => {
     throw ApiError.unauthorized("Invalid or expired access token");
   }
 });
+function extractRefreshToken(req) {
+  if (req.cookies?.refreshToken) return req.cookies.refreshToken;
+  if (req.body?.refreshToken) return req.body.refreshToken;
+  if (req.headers["x-refresh-token"]) return req.headers["x-refresh-token"];
+  return null;
+}
 
 const verifyRefreshToken = asyncHandler(async (req, res, next) => {
-  const token = req.cookies?.refreshToken;
+  const token = extractRefreshToken(req);
 
   if (!token) {
     throw ApiError.unauthorized("Refresh token missing");
@@ -39,7 +46,8 @@ const verifyRefreshToken = asyncHandler(async (req, res, next) => {
     throw ApiError.unauthorized("Invalid or expired refresh token");
   }
 
-  const deviceId = req.cookies?.deviceId || "default";
+  const deviceId = req.body?.deviceId;
+
   const redisKey = `refresh_token:${decoded.sub}:${deviceId}`;
   const storedJti = await redisClient.get(redisKey);
 
