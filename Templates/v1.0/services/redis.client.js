@@ -3,7 +3,6 @@ const redisOptions = require("../config/redis.config");
 const logger = require("../utils/logger");
 
 const redisUrl = process.env.UPSTASH_REDIS_URL;
-console.log(redisUrl);
 if (!redisUrl) {
   logger.error("UPSTASH_REDIS_URL is missing from environment variables");
 }

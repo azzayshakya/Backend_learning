@@ -18,8 +18,8 @@ const signupSchema = Joi.object({
 
 const loginSchema = Joi.object({
   email: Joi.string().trim().lowercase().email().required(),
-  password: Joi.string().required(), // no strength re-check on login, just presence
-  deviceId: Joi.string().optional(), // client-supplied tag to identify this session
+  password: Joi.string().required(),
+  deviceId: Joi.string().optional(),
 });
 
 module.exports = { signupSchema, loginSchema };

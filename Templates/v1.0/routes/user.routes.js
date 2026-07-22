@@ -3,10 +3,8 @@ const router = express.Router();
 
 const { authLimiter } = require("../middleware/rate.limiter");
 const validateRequest = require("../middleware/validate.request.middleware");
-const {
-  authenticateAccessToken,
-  verifyRefreshToken,
-} = require("../middleware/auth.middleware");
+const { authenticateAccessToken } = require("../middleware/auth.middleware");
+const { verifyRefreshToken } = require("../middleware/refreshToken.middleware");
 const checkTokenBlacklist = require("../middleware/blackList.middleware");
 const checkUserBlockedStatus = require("../middleware/blockCheck.middleware");
 const authorizeRoles = require("../middleware/rbac.middleware");
@@ -14,7 +12,6 @@ const { signupSchema, loginSchema } = require("../validator/auth.validate");
 
 const authController = require("../controllers/user.controller");
 
-// ── Public routes ───────────────────────────────────────────────────
 router.post(
   "/signup",
   // authLimiter,
@@ -29,12 +26,11 @@ router.post(
 );
 router.post(
   "/refresh-token",
-  authLimiter,
+  // authLimiter,
   verifyRefreshToken,
   authController.refreshToken,
 );
 
-// ── Protected routes (order matters: auth -> blacklist -> block -> rbac) ──
 router.get(
   "/my-session",
   authenticateAccessToken,
@@ -58,7 +54,6 @@ router.post(
   authController.logoutAllSessions,
 );
 
-// ── Admin-only routes ───────────────────────────────────────────────
 router.post(
   "/admin/users/:id/block",
   authenticateAccessToken,
